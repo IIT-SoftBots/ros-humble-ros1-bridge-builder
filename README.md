@@ -7,17 +7,32 @@ Create a "*ros-humble-ros1-bridge*" package that can be used directly within Ubu
 
 - Note3: If you are looking for ROS2 Jazzy + Ubuntu 24.04 support, see https://github.com/TommyChangUMD/ros-jazzy-ros1-bridge-builder
 
+## System Architecture and Bridge Purpose
+This Docker-based setup allows seamless communication between a robot's existing ROS 1 Noetic system (running natively on a base PC) and new software components developed in ROS 2 Humble.
+
+To avoid modifying or risking the stability of the host system (Ego base PC running Ubuntu 20.04 with ROS 1 Noetic), the ROS 1–ROS 2 bridge is deployed inside a Docker container.
+
+The full architecture on the base PC consists of:
+
+- ROS1 Noetic – Running directly on the host (Ego base PC).
+
+- Container A – Runs ROS2 Humble (used for developing or testing new software nodes).
+
+- Container B – Runs both ROS1 and ROS2 along with the ros1_bridge to enable bidirectional communication between the two systems.
+
+This configuration ensures isolation between environments while enabling cross-communication through the bridge.
+
 ## How to create this builder docker images:
 
 ``` bash
-  git clone https://github.com/TommyChangUMD/ros-humble-ros1-bridge-builder.git
+  git clone https://github.com/IIT-SoftBots/ros-humble-ros1-bridge-builder.git
   cd ros-humble-ros1-bridge-builder
 
   # By default, ros-tutorals support will be built: (bridging the ros-humble-example-interfaces package)
   docker build . -t ros-humble-ros1-bridge-builder --network host
 ```
 
-- Note1: Since building a docker image just needs docker, you could do this step on any system that has docker installed -- it doesn't have to on a Ubuntu 22.04 (Jammy) and it doesn't need ROS2 neither.
+<!-- - Note1: Since building a docker image just needs docker, you could do this step on any system that has docker installed -- it doesn't have to on a Ubuntu 22.04 (Jammy) and it doesn't need ROS2 neither.
 
 - Note2: The builder image can be created on an amd64 machine (e.g., Intel and AMD CPUs) or an arm64 machine (e.g., Raspberry Pi 4B and Nvidia Jetson Orin).  Docker will automatically select the correct platform variant based on the host's architecture.
 
@@ -42,63 +57,25 @@ Alternative builds:
 ```
 - Note1: Don't forget to install the necessary `ros-humble-grid-map` packages on your ROS2 Humble if you choose to build the bridge with the `grid-map` support added.
 
-- Note2: For the custom message example, there is no pre-build package for ROS2 Humble so you will need to compile it from the source.  For details, see [Checking example custom message](#checking-example-custom-message) in the Troubleshoot section.
+- Note2: For the custom message example, there is no pre-build package for ROS2 Humble so you will need to compile it from the source.  For details, see [Checking example custom message](#checking-example-custom-message) in the Troubleshoot section. -->
 
 ## How to create ros-humble-ros1-bridge package:
-###  0.) Start from the latest Ubuntu 22.04 (Jammy) ROS 2 Humble Desktop system, create the "ros-humble-ros1-bridge/" ROS2 package:
+###  0.) Running a Temporary Docker Container with Host Networking
 
 ``` bash
     cd ~/
-    apt update; apt upgrade
-    apt -y install ros-humble-desktop
-    docker run --network host --rm ros-humble-ros1-bridge-builder | tar xvzf -
-```
-
-- Note1: It's **important** that you have **`ros-humble-desktop`** installed on your ROS2 Humble system because we want to **match it with the builder image as closely as possible**.  So, if you haven't done so already, do:
-``` bash
-    apt -y install ros-humble-desktop
-```
-Otherwise you may get an error about missing `ibexample_interfaces__rosidl_typesupport_cpp.so`.  See issue https://github.com/TommyChangUMD/ros-humble-ros1-bridge-builder/issues/10
-
-
-- Note1: There is no compilation at this point, the `docker run` command simply spits out a pre-compiled tarball for either amd64 or arm64 architecture, depending on the architecture of the machine you used to created the builder image.
-
-- Note2: The assumption is that this tarball contains configurations and libraries matching your ROS2 Humble system very closely, although not identical.
-
-- Note3: We don't really need the builder image anymore, to delete it, do:
-
-``` bash
-    docker rmi ros-humble-ros1-bridge-builder
+    docker run -it --rm --network host ros-humble-ros1-bridge-builder bash
 ```
 
 ## How to use ros-humble-ros1-bridge:
-###  1.) First start a ROS1 Noetic docker and bring up a GUI terminal, something like:
+###  1.) First start ROS1 Noetic node on the host PC that could be Alter-Ego PC or you personal PC with ROS1 Noetic or ROS1 Noetic Docker:
+### simple test:
 
 ``` bash
-  rocker --x11 --user --privileged --persist-image \
-         --volume /dev/shm /dev/shm --network=host -- ros:noetic-ros-base-focal \
-         'bash -c "sudo apt update; sudo apt install -y ros-noetic-rospy-tutorials tilix; tilix"'
+rosrun rospy_tutorials listener
 ```
 
-Tha docker image used above, `ros:noetic-ros-base-focal`, is multi-platform.  It runs on amd64 (eg., Intel and AMD CPUs) or arm64 architecture (eg., Raspberry PI 4B and Nvidia Jetson Orin).  Docker will automatically select the correct platform variant based on the host's architecture.
-
-You may need to install rocker first:
-``` bash
-  sudo apt install python3-rocker
-```
-- Note0: Apparently, rocker will not work with the snap version of Docker, so make sure to install **docker.io** instead of installing it from the Snap Store.
-- Note1: It's important to share the host's network and the `/dev/shm/` directory with the container.
-- Note2: You can add the `--home` rocker option if you want your home directory to be shared with the docker container.  Be careful though, as the host's `~/.bashrc` will be executed inside the container.
-- Note3: You can also use **ROS1 Melodic**.  Just replace `ros:noetic-ros-base-focal` with `ros:melodic-ros-base-bionic` and also replace `ros-noetic-rospy-tutorials` with `ros-melodic-rospy-tutorials`.
-
-###  2.) Then, start "roscore" inside the ROS1 Noetic docker container
-
-``` bash
-  source /opt/ros/noetic/setup.bash
-  roscore
-```
-
-###  3.) Now, from the Ubuntu 22.04 (Jammy) ROS2 Humble system, start the ros1 bridge node.
+###  2.) Then, starts ros1_bridge node inside the ros-humble-ros1-bridge docker container
 
 ``` bash
   source /opt/ros/humble/setup.bash
@@ -107,36 +84,23 @@ You may need to install rocker first:
   # or try (See Note2):
   ros2 run ros1_bridge dynamic_bridge --bridge-all-topics
 ```
-- Note: We need to source `local_setup.bash` and NOT `setup.bash` because the bridge was compiled in a docker container that may have different underlay locations.  Besides, we don't need to source these underlays in the host system again.
 
-- Note2: https://github.com/ros2/ros1_bridge states that: "For efficiency reasons, topics will only be bridged when matching publisher-subscriber pairs are active for a topic on either side of the bridge. As a result **using ros2 topic echo <_topic-name_>**  doesn't work but fails with an error message Could not determine the type for the passed topic if no other subscribers are present **since the dynamic bridge hasn't bridged the topic yet**. As a **workaround** the topic type can be specified explicitly **ros2 topic echo <_topic-name_> <_topic-type_>** which triggers the bridging of the topic since the echo command represents the necessary subscriber. On the ROS 1 side rostopic echo doesn't have an option to specify the topic type explicitly. Therefore it can't be used with the dynamic bridge if no other subscribers are present. As an alternative you can use the **--bridge-all-2to1-topics option** to bridge all ROS 2 topics to ROS 1 so that tools such as rostopic echo, rostopic list and rqt will see the topics even if there are no matching ROS 1 subscribers. Run ros2 run ros1_bridge dynamic_bridge -- --help for more options."
-``` bash
-    $ ros2 run ros1_bridge dynamic_bridge --help
-    Usage:
-     -h, --help: This message.
-     --show-introspection: Print output of introspection of both sides of the bridge.
-     --print-pairs: Print a list of the supported ROS 2 <=> ROS 1 conversion pairs.
-     --bridge-all-topics: Bridge all topics in both directions, whether or not there is a matching subscriber.
-     --bridge-all-1to2-topics: Bridge all ROS 1 topics to ROS 2, whether or not there is a matching subscriber.
-     --bridge-all-2to1-topics: Bridge all ROS 2 topics to ROS 1, whether or not there is a matching subscriber.
-```
-
-
-###  3.) Back to the ROS1 Noetic docker container, run in another terminal tab:
+###  3.) Now, starts ROS2 Humble system, inside the ROS2 Humble docker container 
+https://docs.ros.org/en/humble/How-To-Guides/Run-2-nodes-in-single-or-separate-docker-containers.html
 
 ``` bash
-  source /opt/ros/noetic/setup.bash
-  rosrun rospy_tutorials talker
+docker pull osrf/ros:humble-desktop
+docker run -it osrf/ros:humble-desktop
+ros2 run demo_nodes_cpp talker
 ```
-
-###  4.) Finally, from the Ubuntu 22.04 (Jammy) ROS2 Humble system, run in another terminal tab:
+###  4.) Finally, check if the communication is working, check rostopiv list from both side ROS1 and ROS2:
 
 ``` bash
   source /opt/ros/humble/setup.bash
   ros2 run demo_nodes_cpp listener
 ```
 
-## How to add custom message from ROS1 and ROS2 source code
+<!-- ## How to add custom message from ROS1 and ROS2 source code
 See an step 6.3 and 7 in the Dockerfile for an example.
 
 - Note1: Make sure the package name ends with "_msgs".
@@ -240,4 +204,4 @@ $ ros2 run ros1_bridge dynamic_bridge --print-pairs | grep -i octomap
 - https://github.com/ros2/ros1_bridge/blob/master/doc/index.rst
 - https://github.com/smith-doug/ros1_bridge/tree/action_bridge_humble
 - https://github.com/mjforan/ros-humble-ros1-bridge
-- https://packages.ubuntu.com/jammy/ros-desktop-dev
+- https://packages.ubuntu.com/jammy/ros-desktop-dev -->
