@@ -89,6 +89,10 @@ RUN if [[ $(uname -m) = "arm64" || $(uname -m) = "aarch64" ]]; then             
 RUN mv /root/ros2.sources /etc/apt/sources.list.d/
 RUN apt-get -y update
 
+# Per usare envsubst in parameter_bridge.sh
+RUN apt-get update && apt-get install -y gettext-base 
+
+
 # for ros-humble-example-interfaces:
 ARG ADD_ros_tutorials=1
 
@@ -98,6 +102,9 @@ ARG ADD_grid_map=0
 # for a custom message example
 ARG ADD_example_custom_msgs=0
 
+# for alterego custom messages
+ARG ADD_alterego_custom_msgs=1
+
 # for octomap
 ARG ADD_octomap_msgs=0
 
@@ -105,6 +112,7 @@ ARG ADD_octomap_msgs=0
 RUN echo "ADD_ros_tutorials         = '$ADD_ros_tutorials'"
 RUN echo "ADD_grid_map              = '$ADD_grid_map'"
 RUN echo "ADD_example_custom_msgs   = '$ADD_example_custom_msgs'"
+RUN echo "ADD_alterego_custom_msgs  = '$ADD_alterego_custom_msgs'"
 RUN echo "ADD_octomap_msgs          = '$ADD_octomap_msgs'"
 
 ###########################
@@ -184,6 +192,23 @@ RUN if [[ "$ADD_example_custom_msgs" = "1" ]]; then                     \
       time colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release;        \
     fi
 
+RUN if [[ "$ADD_alterego_custom_msgs" = "1" ]]; then                                                          \ 
+      git clone -b main https://github.com/IIT-SoftBots/alterego_msgs.git /root/ros1_ws/src/alterego_msgs;    \
+      git clone -b humble https://github.com/IIT-SoftBots/alterego_msgs.git /root/ros2_ws/src/alterego_msgs;  \
+      #                                                                                                     \
+      # Compile for ROS1:                                                                                   \
+      #                                                                                                     \
+      cd /root/ros1_ws/src/alterego_msgs;                                                                   \
+      unset ROS_DISTRO;                                                                                     \
+      time colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release;                                            \
+      #                                                                                                     \
+      # Compile for ROS2:                                                                                   \
+      #                                                                                                     \
+      cd /root/ros2_ws/src/alterego_msgs;                                                                   \
+      source /opt/ros/humble/setup.bash;                                                                    \
+      time colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release;                                            \
+    fi
+
 
 ###########################
 # 6.4 Add ROS1 octomap message
@@ -230,6 +255,12 @@ RUN                                                                             
       source /custom_msgs/custom_msgs_ros2/install/setup.bash;                                  \
     fi;                                                                                         \
     #                                                                                           \
+    if [[ "$ADD_alterego_custom_msgs" = "1" ]]; then                                             \
+      # Apply ROS1 package overlay                                                              \
+      source /root/ros1_ws/src/alterego_msgs/install/setup.bash;                          \
+      # Apply ROS2 package overlay                                                              \
+      source /root/ros2_ws/src/alterego_msgs/install/setup.bash;                          \
+    fi;                                                                                         \
     if [[ "$ADD_octomap_msgs" = "1" ]]; then                                                    \
       # Apply ROS1 package overlay                                                              \
       source octomap_msgs/install/setup.bash;                                                   \
@@ -290,5 +321,10 @@ RUN ROS1_LIBS="libxmlrpcpp.so";                                                 
 ###########################
 RUN tar czf /ros-humble-ros1-bridge.tgz \
      --exclude '*/build/*' --exclude '*/src/*' /ros-humble-ros1-bridge
+# Copy the launch scripts
+# COPY ./scripts/entrypoint.sh /bin/entrypoint.sh
+COPY ./scripts/parameter_bridge.sh /bin/parameter_bridge
+# RUN chmod +x /bin/entrypoint.sh
+RUN chmod +x /bin/parameter_bridge
 ENTRYPOINT []
 CMD cat /ros-humble-ros1-bridge.tgz; sync

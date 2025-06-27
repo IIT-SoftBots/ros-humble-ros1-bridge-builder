@@ -1,0 +1,31 @@
+topics:
+  -
+    topic: "${ROBOT_NAME}/imu/RPY"  # Topic name using the variable
+    type: geometry_msgs/msg/Vector3
+    queue_size: 1
+  -
+    topic: "${ROBOT_NAME}/recognized_speech"
+    type: std_msgs/msg/String
+    queue_size: 1
+  -
+    topic: "${ROBOT_NAME}/alterego_state/upperbody"  # Custom_msg
+    type: alterego_msgs/msg/UpperBodyState
+    queue_size: 1
+  -
+    topic: "${ROBOT_NAME}/alterego_state/lowerbody"  # Custom_msg
+    type: alterego_msgs/msg/LowerBodyState
+    queue_size: 1
+  -
+    topic: "${ROBOT_NAME}/wheels/DebugLQR"     # Custom_msg
+    type: alterego_msgs/msg/DebugLQR
+    queue_size: 1
+
+services_2_to_1:
+  -
+    service: /add_two_ints
+    type: roscpp_tutorials/TwoInts
+
+services_1_to_2:
+  -
+    service: /enable_auto_mode_service
+    type: alterego_msgs/srv/EnableAutoModeService

@@ -79,7 +79,7 @@ rosrun rospy_tutorials listener
 
 ``` bash
   source /opt/ros/humble/setup.bash
-  source ~/ros-humble-ros1-bridge/install/local_setup.bash
+  source /ros-humble-ros1-bridge/install/local_setup.bash
   ros2 run ros1_bridge dynamic_bridge
   # or try (See Note2):
   ros2 run ros1_bridge dynamic_bridge --bridge-all-topics
@@ -100,6 +100,31 @@ ros2 run demo_nodes_cpp talker
   ros2 run demo_nodes_cpp listener
 ```
 
+## How to use parameter_bridge instead of dynamic_bridge
+
+Nella cartella config è presente un file "parameter_bridge_template.yaml" in funzione del ROBOT_NAME, tipica variabile presente nel .bashrc del computer di base del robot.
+
+``` bash
+  docker build . -t ros-humble-ros1-bridge-builder --network host
+  docker run -it --rm --network host   --mount src=/home/esguerri/Docker_folders/ros-humble-ros1-bridge-builder/config/parameter_bridge_template.yaml,target=/parameter_bridge_template.yaml,type=bind   --mount src=/home/esguerri/.bashrc,target=/host_bashrc,type=bind  -e ROBOT_NAME=$ROBOT_NAME   ros-humble-ros1-bridge-builder:latest bash
+```
+Una volta nel Docker:
+``` bash
+parameter_bridge
+```
+parameter_bridge.sh (che trovi dentro la repo bin del container), crea il file "parameter_bridge.yaml" a partire dal file "parameter_bridge_template.yaml". Come puoi notare adesso  il"parameter_bridge.yaml" nel continer è scritto in funzione del nome del robot(ROBOT_NAME).
+
+## How to add custom message from ROS1 and ROS2 source code to use it with parameter_bridge
+Se nel file "parameter_bridge_template.yaml" vuoi passare dei topic con custom_msgs, devi abilitare nel Dockerfile abilitando la variabile ARG ADD_alterego_custom_msgs=1.
+
+``` bash
+  docker build . -t ros-humble-ros1-bridge-builder --network host
+  docker run -it --rm --network host   --mount src=/home/esguerri/Docker_folders/ros-humble-ros1-bridge-builder/config/parameter_bridge_template.yaml,target=/parameter_bridge_template.yaml,type=bind   --mount src=/home/esguerri/.bashrc,target=/host_bashrc,type=bind  -e ROBOT_NAME=$ROBOT_NAME   ros-humble-ros1-bridge-builder:latest bash
+```
+Una volta nel Docker:
+``` bash
+parameter_bridge
+```
 <!-- ## How to add custom message from ROS1 and ROS2 source code
 See an step 6.3 and 7 in the Dockerfile for an example.
 
