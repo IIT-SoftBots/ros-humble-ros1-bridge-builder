@@ -25,6 +25,8 @@ This configuration ensures isolation between environments while enabling cross-c
 ## How to create this builder docker images:
 
 ``` bash
+  mkdir Docker_folders
+  cd Docker_folders
   git clone https://github.com/IIT-SoftBots/ros-humble-ros1-bridge-builder.git
   cd ros-humble-ros1-bridge-builder
 
@@ -106,7 +108,7 @@ In the config folder, there is a file named parameter_bridge_template.yaml, whic
 
 ``` bash
   docker build . -t ros-humble-ros1-bridge-builder --network host
-  docker run -it --rm --network host   --mount src=/home/esguerri/Docker_folders/ros-humble-ros1-bridge-builder/config/parameter_bridge_template.yaml,target=/parameter_bridge_template.yaml,type=bind   --mount src=/home/esguerri/.bashrc,target=/host_bashrc,type=bind  -e ROBOT_NAME=$ROBOT_NAME   ros-humble-ros1-bridge-builder:latest bash
+  docker run -it --rm --network host   --mount src=~/Docker_folders/ros-humble-ros1-bridge-builder/config/parameter_bridge_template.yaml,target=/parameter_bridge_template.yaml,type=bind   --mount src=~/.bashrc,target=/host_bashrc,type=bind  -e ROBOT_NAME=$ROBOT_NAME   ros-humble-ros1-bridge-builder:latest bash
 ```
 Once inside the Docker container, run:
 ``` bash
@@ -120,7 +122,7 @@ After that, customize the parameter_bridge_template.yaml file again and then run
 
 ``` bash
   docker build . -t ros-humble-ros1-bridge-builder --network host
-  docker run -it --rm --network host   --mount src=/home/esguerri/Docker_folders/ros-humble-ros1-bridge-builder/config/parameter_bridge_template.yaml,target=/parameter_bridge_template.yaml,type=bind   --mount src=/home/esguerri/.bashrc,target=/host_bashrc,type=bind  -e ROBOT_NAME=$ROBOT_NAME   ros-humble-ros1-bridge-builder:latest bash
+  docker run -it --rm --network host   --mount src=~/Docker_folders/ros-humble-ros1-bridge-builder/config/parameter_bridge_template.yaml,target=/parameter_bridge_template.yaml,type=bind   --mount src=~/.bashrc,target=/host_bashrc,type=bind  -e ROBOT_NAME=$ROBOT_NAME   ros-humble-ros1-bridge-builder:latest bash
 ```
 Once inside the Docker container, run:
 ``` bash
@@ -140,7 +142,7 @@ source /root/ros2_ws/src/alterego_msgs/install/setup.bash
 ```
 Choose one of the topics you customized in the parameter_bridge_template.yaml file and check if values are being received.
 ``` bash
-ros2 topic echo /AlterEgo_sim/alterego_state/lowerbody | grep mobile_base_pos_x
+ros2 topic echo /ROBOT_NAME/alterego_state/lowerbody | grep mobile_base_pos_x
 ```
 <!-- ## How to add custom message from ROS1 and ROS2 source code
 See an step 6.3 and 7 in the Dockerfile for an example.
