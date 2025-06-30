@@ -93,7 +93,7 @@ docker pull osrf/ros:humble-desktop
 docker run -it osrf/ros:humble-desktop
 ros2 run demo_nodes_cpp talker
 ```
-###  4.) Finally, check if the communication is working, check rostopiv list from both side ROS1 and ROS2:
+###  4.) Finally, check if the communication is working, check rostopic list from both side ROS1 and ROS2:
 
 ``` bash
   source /opt/ros/humble/setup.bash
@@ -102,28 +102,45 @@ ros2 run demo_nodes_cpp talker
 
 ## How to use parameter_bridge instead of dynamic_bridge
 
-Nella cartella config è presente un file "parameter_bridge_template.yaml" in funzione del ROBOT_NAME, tipica variabile presente nel .bashrc del computer di base del robot.
+In the config folder, there is a file named parameter_bridge_template.yaml, which depends on the ROBOT_NAME variable — a common environment variable typically defined in the robot’s base computer .bashrc file.
 
 ``` bash
   docker build . -t ros-humble-ros1-bridge-builder --network host
   docker run -it --rm --network host   --mount src=/home/esguerri/Docker_folders/ros-humble-ros1-bridge-builder/config/parameter_bridge_template.yaml,target=/parameter_bridge_template.yaml,type=bind   --mount src=/home/esguerri/.bashrc,target=/host_bashrc,type=bind  -e ROBOT_NAME=$ROBOT_NAME   ros-humble-ros1-bridge-builder:latest bash
 ```
-Una volta nel Docker:
+Once inside the Docker container, run:
 ``` bash
 parameter_bridge
 ```
-parameter_bridge.sh (che trovi dentro la repo bin del container), crea il file "parameter_bridge.yaml" a partire dal file "parameter_bridge_template.yaml". Come puoi notare adesso  il"parameter_bridge.yaml" nel continer è scritto in funzione del nome del robot(ROBOT_NAME).
+This command runs parameter_bridge.sh (which is located in the bin folder of the container’s repository). This script generates the parameter_bridge.yaml file based on the parameter_bridge_template.yaml file. As you can see, the resulting parameter_bridge.yaml inside the container is now configured according to the robot’s name (ROBOT_NAME).
 
 ## How to add custom message from ROS1 and ROS2 source code to use it with parameter_bridge
-Se nel file "parameter_bridge_template.yaml" vuoi passare dei topic con custom_msgs, devi abilitare nel Dockerfile abilitando la variabile ARG ADD_alterego_custom_msgs=1.
+If you want to include topics with custom messages in the parameter_bridge_template.yaml file, you need to enable it in the Dockerfile by setting the variable ARG ADD_alterego_custom_msgs=1.
+After that, customize the parameter_bridge_template.yaml file again and then run:
 
 ``` bash
   docker build . -t ros-humble-ros1-bridge-builder --network host
   docker run -it --rm --network host   --mount src=/home/esguerri/Docker_folders/ros-humble-ros1-bridge-builder/config/parameter_bridge_template.yaml,target=/parameter_bridge_template.yaml,type=bind   --mount src=/home/esguerri/.bashrc,target=/host_bashrc,type=bind  -e ROBOT_NAME=$ROBOT_NAME   ros-humble-ros1-bridge-builder:latest bash
 ```
-Una volta nel Docker:
+Once inside the Docker container, run:
 ``` bash
 parameter_bridge
+```
+## How to check if ros-humble-ros1-bridge is working with parameter_bridge:
+Remember to start ROS1 on the host PC. In this case, to test the bridge, launch the Alter-Ego simulator by running the following file, as usual:
+``` bash
+roslaunch alterego_gazebo main.launch AlterEgoVersion:=3
+```
+Now, open a new terminal in the Docker container and check if the bridge can see the topics:
+``` bash
+docker exec -it container_name bash
+source /opt/ros/humble/setup.bash
+source /root/ros1_ws/src/alterego_msgs/install/setup.bash
+source /root/ros2_ws/src/alterego_msgs/install/setup.bash
+```
+Choose one of the topics you customized in the parameter_bridge_template.yaml file and check if values are being received.
+``` bash
+ros2 topic echo /AlterEgo_sim/alterego_state/lowerbody | grep mobile_base_pos_x
 ```
 <!-- ## How to add custom message from ROS1 and ROS2 source code
 See an step 6.3 and 7 in the Dockerfile for an example.
