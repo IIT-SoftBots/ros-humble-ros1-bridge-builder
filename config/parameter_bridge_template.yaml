@@ -1,13 +1,17 @@
 topics:
   -
-    topic: "${ROBOT_NAME}/imu/RPY"  # Topic name using the variable
+    topic: "/${ROBOT_NAME}/imu/RPY"  # Topic name using the variable
     type: geometry_msgs/msg/Vector3
     queue_size: 1
   -
-    topic: "${ROBOT_NAME}/cmd_vel"
+    topic: "/${ROBOT_NAME}/cmd_vel"
     type: geometry_msgs/msg/Twist
     queue_size: 1
   -
-    topic: "${ROBOT_NAME}/alterego_state/lowerbody"  # Custom_msg
+    topic: "/${ROBOT_NAME}/alterego_state/lowerbody"  # Custom_msg
     type: alterego_msgs/msg/LowerBodyState
     queue_size: 1
+
+services_2_to_1: []
+
+services_1_to_2: []
