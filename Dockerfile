@@ -326,5 +326,7 @@ RUN tar czf /ros-humble-ros1-bridge.tgz \
 COPY ./scripts/parameter_bridge.sh /bin/parameter_bridge
 # RUN chmod +x /bin/entrypoint.sh
 RUN chmod +x /bin/parameter_bridge
+# Set ROS_DOMAIN_ID to 100
+ENV ROS_DOMAIN_ID=100
 ENTRYPOINT []
 CMD cat /ros-humble-ros1-bridge.tgz; sync
