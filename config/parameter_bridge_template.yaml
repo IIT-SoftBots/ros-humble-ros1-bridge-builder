@@ -4,6 +4,10 @@ topics:
     type: geometry_msgs/msg/Vector3
     queue_size: 1
   -
+    topic: "${ROBOT_NAME}/speech2text"
+    type: std_msgs/msg/String
+    queue_size: 1
+  -
     topic: "/${ROBOT_NAME}/cmd_vel"
     type: geometry_msgs/msg/Twist
     queue_size: 1

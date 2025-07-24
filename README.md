@@ -108,7 +108,7 @@ In the config folder, there is a file named parameter_bridge_template.yaml, whic
 
 ``` bash
   docker build . -t ros-humble-ros1-bridge-builder --network host
-  docker run -it --rm --network host   --mount src=~/Docker_folders/ros-humble-ros1-bridge-builder/config/parameter_bridge_template.yaml,target=/parameter_bridge_template.yaml,type=bind   --mount src=~/.bashrc,target=/host_bashrc,type=bind  -e ROBOT_NAME=$ROBOT_NAME   ros-humble-ros1-bridge-builder:latest bash
+  docker run -it --rm --network host --name ${ROBOT_NAME}_bridge --mount src=~/Docker_folders/ros-humble-ros1-bridge-builder/config/parameter_bridge_template.yaml,target=/parameter_bridge_template.yaml,type=bind --mount src=~/.bashrc,target=/host_bashrc,type=bind -e ROBOT_NAME=$ROBOT_NAME ros-humble-ros1-bridge-builder:latest bash
 ```
 Once inside the Docker container, run:
 ``` bash
@@ -122,7 +122,8 @@ After that, customize the parameter_bridge_template.yaml file again and then run
 
 ``` bash
   docker build . -t ros-humble-ros1-bridge-builder --network host
-  docker run -it --rm --network host   --mount src=~/Docker_folders/ros-humble-ros1-bridge-builder/config/parameter_bridge_template.yaml,target=/parameter_bridge_template.yaml,type=bind   --mount src=~/.bashrc,target=/host_bashrc,type=bind  -e ROBOT_NAME=$ROBOT_NAME   ros-humble-ros1-bridge-builder:latest bash
+  docker run -it --rm --network host --name ${ROBOT_NAME}_bridge --mount src=~/Docker_folders/ros-humble-ros1-bridge-builder/config/parameter_bridge_template.yaml,target=/parameter_bridge_template.yaml,type=bind --mount src=~/.bashrc,target=/host_bashrc,type=bind -e ROBOT_NAME=$ROBOT_NAME ros-humble-ros1-bridge-builder:latest bash
+
 ```
 Once inside the Docker container, run:
 ``` bash
