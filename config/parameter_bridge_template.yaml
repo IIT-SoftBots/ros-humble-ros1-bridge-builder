@@ -15,6 +15,14 @@ topics:
     topic: "/${ROBOT_NAME}/alterego_state/lowerbody"  # Custom_msg
     type: alterego_msgs/msg/LowerBodyState
     queue_size: 1
+  -
+    topic: "/${ROBOT_NAME}/odom"
+    type: nav_msgs/msg/Odometry
+    queue_size: 1
+  -
+    topic: "/${ROBOT_NAME}/scan"
+    type: sensor_msgs/msg/LaserScan
+    queue_size: 1
 
 services_2_to_1: []
 
