@@ -4,7 +4,7 @@ topics:
     type: geometry_msgs/msg/Vector3
     queue_size: 1
   -
-    topic: "${ROBOT_NAME}/speech2text"
+    topic: "/${ROBOT_NAME}/speech2text"
     type: std_msgs/msg/String
     queue_size: 1
   -
@@ -35,7 +35,23 @@ topics:
     topic: /robot_pose
     type: geometry_msgs/msg/PoseStamped
     queue_size: 1
-  
+  -
+    topic: "/${ROBOT_NAME}/goal_reached"  # ROS1 -> ROS2: SUCCEEDED dalla navigazione
+    type: std_msgs/msg/String
+    queue_size: 1
+  -
+    topic: "/${ROBOT_NAME}/end_movement"  # ROS1 -> ROS2: fine movimento braccio
+    type: std_msgs/msg/Bool
+    queue_size: 1
+  -
+    topic: "/${ROBOT_NAME}/target_location"  # ROS2 -> ROS1: stanza di destinazione / home
+    type: std_msgs/msg/String
+    queue_size: 1
+  -
+    topic: "/${ROBOT_NAME}/manipulation_routine"  # ROS2 -> ROS1: grasp_joints:<side> / release_joint:<side>
+    type: std_msgs/msg/String
+    queue_size: 1
+
 services_2_to_1: []
 
 services_1_to_2: []
