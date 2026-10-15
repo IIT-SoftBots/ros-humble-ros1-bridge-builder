@@ -28,12 +28,32 @@ topics:
     type: nav_msgs/msg/OccupancyGrid
     queue_size: 1   
   -
-    topic: "/mission_control/global_path"
-    type: visualization_msgs/msg/Marker
-    queue_size: 1
-  - 
     topic: /robot_pose
     type: geometry_msgs/msg/PoseStamped
+    queue_size: 1
+  -
+    topic: /${ROBOT_NAME}/goal_reached
+    type: std_msgs/msg/String
+    queue_size: 1
+  -
+    topic: /${ROBOT_NAME}/target_location
+    type: std_msgs/msg/String
+    queue_size: 1
+  -
+    topic: /${ROBOT_NAME}/voice_intensity
+    type: std_msgs/msg/Float64
+    queue_size: 1
+  -
+    topic: /${ROBOT_NAME}/emoticons
+    type: std_msgs/msg/Float64
+    queue_size: 1
+  -
+    topic: "/${ROBOT_NAME}/manipulation_routine"  # ROS2 -> ROS1: grasp_joints:<side> / release_joint:<side>
+    type: std_msgs/msg/String
+    queue_size: 1
+  -
+    topic: "/${ROBOT_NAME}/end_movement"  # ROS1 -> ROS2: fine movimento braccio
+    type: std_msgs/msg/Bool
     queue_size: 1
   
 services_2_to_1: []
